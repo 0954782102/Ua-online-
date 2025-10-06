@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="uk" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YutFurry — прототип</title>
+  <!-- Tailwind Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
+  <style>
+    .logo-tail { width: 34px; height: 24px; border-radius: 4px; }
+    .video-thumb { background-size: cover; background-position: center; transition: transform .3s ease; }
+    .video-thumb:hover { transform: scale(1.05); }
+  </style>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+  <div id="app" class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between px-4 py-3 border-b dark:border-gray-700">
+      <div class="flex items-center space-x-3">
+        <button id="navToggle" class="md:hidden p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
+          <div class="flex items-center px-2 py-1 bg-red-600 rounded logo-tail">
+            <svg viewBox="0 0 24 24" fill="white" class="w-5 h-5"><path d="M10 15l5.19-3L10 9v6z"/></svg>
+          </div>
+          <div class="hidden sm:block font-bold text-lg tracking-tight">YutFurry</div>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <div class="flex-1 max-w-2xl mx-4">
+        <div class="relative">
+          <input id="searchInput" type="search" placeholder="Шукати на YutFurry" class="w-full border rounded-full px-4 py-2 pr-32 focus:outline-none focus:ring-2 focus:ring-red-400 dark:border-gray-700 dark:bg-gray-800" oninput="onSearchInput(this.value)" onkeydown="onSearchKey(event)" />
+          <button class="absolute right-0 top-0 mt-1 mr-1 bg-red-600 text-white px-4 py-1 rounded-full transition hover:bg-red-700" onclick="performSearch()">Шукати</button>
+          <ul id="suggestions" class="absolute left-0 right-0 bg-white dark:bg-gray-800 border dark:border-gray-700 mt-1 rounded shadow z-50 hidden max-h-60 overflow-auto"></ul>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <button title="Темна тема" class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" onclick="toggleDarkMode()">🌓</button>
+        <button title="Додати" class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" onclick="openCreateMenu()">➕</button>
+        <button title="Сповіщення" class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800">🔔</button>
+        <div class="relative">
+          <img id="avatar" src="https://dummyimage.com/40x40/ddd/aaa.png&text=F" alt="avatar" class="w-9 h-9 rounded-full cursor-pointer border dark:border-gray-600" onclick="openProfile()" />
+        </div>
+      </div>
+    </header>
+
+    <div class="flex flex-1">
+      <!-- Sidebar -->
+      <aside id="sidebar" class="w-64 md:block hidden border-r dark:border-gray-700 transition-transform">
+        <nav class="p-4 space-y-1 text-sm">
+          <a class="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer" onclick="goHome()"><span>🏠</span><span>Головна</span></a>
+          <a class="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer" onclick="showExplore()"><span>🔥</span><span>Популярне</span></a>
+          <a class="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer" onclick="showSubscriptions()"><span>📺</span><span>Підписки</span></a>
+          <hr class="my-2 border-gray-200 dark:border-gray-700" />
+          <a class="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"><span>🎵</span><span>Музика</span></a>
+          <a class="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"><span>🎮</span><span>Ігри</span></a>
+          <a class="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"><span>📡</span><span>Стрими</span></a>
+          <a class="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"><span>🎨</span><span>Furry Art</span></a>
+          <hr class="my-2 border-gray-200 dark:border-gray-700" />
+          <a class="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer" onclick="openCreateChannel()">➕ <span>Створити канал</span></a>
+          <a class="flex items-center space-x-3 p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer" onclick="openSettings()">⚙️ <span>Налаштування</span></a>
+        </nav>
+      </aside>
+
+      <!-- Main content -->
+      <main id="main" class="flex-1 p-4">
+
+        <!-- Top categories -->
+        <div class="flex items-center gap-2 mb-4 overflow-x-auto">
+          <button class="px-3 py-1 rounded-full border bg-gray-50 dark:bg-gray-800" onclick="filterCategory('all')">Усі</button>
+          <button class="px-3 py-1 rounded-full border dark:border-gray-600" onclick="filterCategory('music')">Музика</button>
+          <button class="px-3 py-1 rounded-full border dark:border-gray-600" onclick="filterCategory('games')">Ігри</button>
+          <button class="px-3 py-1 rounded-full border dark:border-gray-600" onclick="filterCategory('streams')">Стрими</button>
+          <button class="px-3 py-1 rounded-full border dark:border-gray-600" onclick="filterCategory('art')">Арт</button>
+          <button class="px-3 py-1 rounded-full border dark:border-gray-600" onclick="filterCategory('new')">Нове</button>
+        </div>
+
+        <!-- Video grid -->
+        <section id="videosGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <!-- video cards injected by JS -->
+        </section>
+
+      </main>
+    </div>
+
+    <footer class="text-center text-xs text-gray-500 dark:text-gray-400 py-4 border-t dark:border-gray-700">
+      © YutFurry — прототип інтерфейсу
+    </footer>
+  </div>
+
+  <!-- Player Modal -->
+  <div id="playerModal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50 transition">
+    <div class="bg-white dark:bg-gray-900 w-full max-w-4xl rounded-lg overflow-hidden shadow-2xl animate-fadeIn">
+      <div class="flex items-center justify-between p-3 border-b dark:border-gray-700">
+        <div class="font-semibold">Відтворення</div>
+        <button class="text-gray-600 dark:text-gray-300" onclick="closePlayer()">✖</button>
+      </div>
+      <div class="p-4">
+        <div id="playerArea" class="w-full aspect-video bg-black flex items-center justify-center text-white">Видео плеєр</div>
+        <div class="mt-3">
+          <h3 id="playerTitle" class="font-semibold"></h3>
+          <p id="playerMeta" class="text-sm text-gray-500 dark:text-gray-400"></p>
+          <div class="mt-2 flex items-center gap-3">
+            <button class="px-3 py-1 border rounded dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800">👍</button>
+            <button class="px-3 py-1 border rounded dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800">👎</button>
+            <button class="px-3 py-1 border rounded dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800">Поділитися</button>
+            <button class="px-3 py-1 border rounded dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800" onclick="clipVideo()">Кліпнути</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drawer Create Channel -->
+  <div id="createChannelDrawer" class="fixed right-0 top-0 h-full w-full md:w-96 bg-white dark:bg-gray-900 border-l dark:border-gray-700 shadow-lg transform translate-x-full transition-transform z-40">
+    <div class="p-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-semibold">Створити канал</h3>
+        <button onclick="closeCreateChannel()">✖</button>
+      </div>
+      <form id="createChannelForm" class="mt-4 space-y-3" onsubmit="event.preventDefault(); createChannel()">
+        <div>
+          <label class="block text-sm">Назва каналу</label>
+          <input id="channelName" class="w-full border px-3 py-2 rounded dark:border-gray-700 dark:bg-gray-800" required />
+        </div>
+        <div>
+          <label class="block text-sm">Опис</label>
+          <textarea id="channelDesc" class="w-full border px-3 py-2 rounded dark:border-gray-700 dark:bg-gray-800" rows="4"></textarea>
+        </div>
+        <div class="flex gap-2">
+          <button class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Створити</button>
+          <button type="button" class="px-4 py-2 border rounded dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800" onclick="closeCreateChannel()">Скасувати</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const sampleVideos = Array.from({length:12}).map((_,i)=>({
+      id: 'v'+i,
+      title: ['Furry vlog','Art timelapse','Gameplay highlights','Live stream recap'][i%4] + ' — #' + (i+1),
+      author: ['FoxKit','NekoArt','GamerPaw','StreamCat'][i%4],
+      views: ((i+1)*3.4).toFixed(1)+'K',
+      thumb: `https://picsum.photos/seed/yutfurry${i}/640/360`
+    }))
+
+    function renderGrid(filter='all'){
+      const grid = document.getElementById('videosGrid');
+      grid.innerHTML = '';
+      const filtered = sampleVideos.filter(v=> filter==='all' || v.title.toLowerCase().includes(filter));
+      filtered.forEach(v=>{
+        const el = document.createElement('article');
+        el.className = 'bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg overflow-hidden transition';
+        el.innerHTML = `
+          <div class="video-thumb h-44" style="background-image:url('${v.thumb}')" onclick="openPlayer('${v.id}')"></div>
+          <div class="p-3">
+            <div class="flex items-start gap-3">
+              <img src="https://dummyimage.com/48x48/ddd/aaa.png&text=${v.author.charAt(0)}" class="w-12 h-12 rounded-full border dark:border-gray-600" />
+              <div class="flex-1">
+                <h4 class="font-semibold text-sm">${v.title}</h4>
+                <div class="text-xs text-gray-500 dark:text-gray-400">${v.author} • ${v.views} переглядів</div>
+              </div>
+            </div>
+          </div>`;
+        grid.appendChild(el);
+      })
+    }
+    renderGrid();
+
+    const suggestionsEl = document.getElementById('suggestions');
+    function onSearchInput(q){
+      const val = q.trim().toLowerCase();
+      if(!val){ suggestionsEl.classList.add('hidden'); suggestionsEl.innerHTML=''; return }
+      const matches = sampleVideos.filter(v=> v.title.toLowerCase().includes(val) || v.author.toLowerCase().includes(val)).slice(0,6);
+      suggestionsEl.innerHTML = matches.map(m=>`<li class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" onclick="applySuggestion('${m.title.replace(/'/g,"\\'")}')">${m.title} — <span class='text-xs text-gray-500 dark:text-gray-400'>${m.author}</span></li>`).join('')
+      suggestionsEl.classList.remove('hidden');
+    }
+    function applySuggestion(t){ document.getElementById('searchInput').value = t; suggestionsEl.classList.add('hidden'); performSearch(); }
+    function onSearchKey(e){ if(e.key==='Escape') suggestionsEl.classList.add('hidden'); if(e.key==='Enter') performSearch(); }
+    function performSearch(){ const q = document.getElementById('searchInput').value.trim().toLowerCase(); renderGrid(q || 'all'); suggestionsEl.classList.add('hidden'); }
+
+    function openPlayer(id){
+      const v = sampleVideos.find(x=>x.id===id);
+      if(!v) return;
+      document.getElementById('playerTitle').textContent = v.title;
+      document.getElementById('playerMeta').textContent = `${v.author} • ${v.views} переглядів`;
+      const playerArea = document.getElementById('playerArea');
+      playerArea.style.backgroundImage = `url('${v.thumb}')`;
+      playerArea.textContent = '';
+      document.getElementById('playerModal').classList.remove('hidden');
+      document.getElementById('playerModal').classList.add('flex');
+    }
+    function closePlayer(){ document.getElementById('playerModal').classList.add('hidden'); document.getElementById('playerModal').classList.remove('flex'); }
+
+    function clipVideo(){ alert('Функція кліпування (демо).'); }
+
+    function openCreateChannel(){ document.getElementById('createChannelDrawer').style.transform = 'translateX(0)'; }
+    function closeCreateChannel(){ document.getElementById('createChannelDrawer').style.transform = 'translateX(100%)'; }
+    function createChannel(){
+      const name = document.getElementById('channelName').value.trim();
+      const desc = document.getElementById('channelDesc').value.trim();
+      if(!name) return alert('Вкажи назву каналу');
+      closeCreateChannel();
+      alert(`Канал "${name}" створено (демо). Опис: ${desc}`);
+    }
+
+    function goHome(){ renderGrid('all'); }
+    function showExplore(){ renderGrid(''); }
+    function showSubscriptions(){ alert('Підписки — демо'); }
+    function openCreateMenu(){ openCreateChannel(); }
+    function openSettings(){ alert('Налаштування — демо'); }
+    function openProfile(){ alert('Профіль — демо'); }
+
+    document.getElementById('navToggle').addEventListener('click', ()=>{
+      const s = document.getElementById('sidebar');
+      s.classList.toggle('hidden');
+    });
+
+    function toggleDarkMode(){
+      document.documentElement.classList.toggle('dark');
+    }
+  </script>
+</body>
+</html>
